@@ -1,0 +1,120 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Update</title>
+</head>
+<body>
+    <div>
+        <form method="post" action="/Test/Add">
+            <table>
+                <tr>
+                    <td>姓名</td>
+                    <td><input name="name" type="text" id="name" /></td>
+                </tr>
+                <tr>
+                    <td>年龄</td>
+                    <td><input name="age" type="text" id="age" /></td>
+                </tr>
+                <tr>
+                    <td>部门</td>
+                    <td>
+                        <select id="class_id">
+                        </select>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input id="Submit1" type="button" value="保存" />
+
+
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+</html>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    var id = 0;
+    $(function () {
+        id =@Request.QueryString["id"]
+        //alert(id);
+        GetDepts();
+        GetById(id);
+        $("#Submit1").click(function () {
+            Save(id);
+        });
+    });
+
+    function GetDepts() {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/GetClasses",
+            data: "{}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+
+                $.each(result, function (index, data) {
+                    $("#class_id").append("<option value='" + data.id + "'>" + data.name + "</option>");
+                });
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+
+    function GetById(id) {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/GetById",
+            data: "{id:"+id+"}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                $("#name").val(result[0].name);
+                $("#age").val(result[0].age);
+                $("#class_id").val(result[0].class_id);
+                //console.log(result);
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+
+    function Save(id) {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/Edit",
+            data: "{s:{id:"+id+", name:'" + $("#name").val() + "',age:" + $("#age").val() + ",class_id:'" + $("#class_id").val() + "'}}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                if (result > 0) {
+                    alert("修改成功");
+                    location.href = '/DemoAJAX/Index';
+                } else {
+                    alert("修改失败");
+                }
+
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+    }
+</script>

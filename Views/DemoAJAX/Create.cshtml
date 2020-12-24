@@ -1,0 +1,91 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Create</title>
+</head>
+<body>
+    <div>
+        <form method="post" action="/Test/Add">
+            <table>
+                <tr>
+                    <td>姓名</td>
+                    <td><input name="name" type="text" id="name" /></td>
+                </tr>
+                <tr>
+                    <td>年龄</td>
+                    <td><input name="age" type="text" id="age" /></td>
+                </tr>
+                <tr>
+                    <td>班级</td>
+                    <td>
+                        <select id="classId">
+                        </select>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input id="Submit1" type="button" value="添加" onclick="add(this)" />
+
+
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+</html>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    $(function () {
+        GetDepts();
+    });
+    function GetDepts() {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/GetClasses",
+            data: "{}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+
+                $.each(result, function (index, data) {
+                    $("#classId").append("<option value='" + data.id + "'>" + data.name + "</option>");
+                });
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+    function add() {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/Add",
+            data: "{s:{name:'" + $("#name").val() + "',age:" + $("#age").val() + ",class_id:'" + $("#classId").val() + "'}}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                if (result > 0) {
+                    alert("新增成功");
+                    location.href = '/DemoAJAX/Index';
+                } else {
+                    alert("新增失败");
+                }
+
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+    }
+</script>

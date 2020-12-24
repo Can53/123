@@ -1,0 +1,163 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="~/layui-v2.5.7/layui/css/layui.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+        <a href="/DemoAJAX/Create">新增</a>
+        <table border="1" width="100%" class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    <td>编号</td>
+                    <td>姓名</td>
+                    <td>年龄</td>
+                    <td>班级</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody id="tb1"></tbody>
+        </table>
+        @*定义分页的容器*@
+        <div id="demoPageList"></div>
+        @*<input type="button" class="btn btn-success" id="btnFirst" value="首页" />
+        <input type="button" class="btn btn-success" id="btnBack" value="上一页" />
+        <input type="button" class="btn btn-success" id="btnNext" value="下一页" />
+        <input type="button" class="btn btn-success" id="btnlast" value="尾页" />*@
+    </div>
+</body>
+</html>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/layui-v2.5.7/layui/layui.js"></script>
+<script>
+
+    var pageIndex = 1;
+    var pageSize = 10;
+    var pageCount = 0;
+    var rows = 0;
+
+
+
+    $(function () {
+        
+        PageRows();
+
+        PageList(pageIndex, pageSize);
+
+        //$("#btnFirst").click(function () {
+        //    pageIndex = 1;
+        //    PageList();
+        //});
+        //$("#btnBack").click(function () {
+        //    pageIndex--;
+        //    PageList();
+        //});
+        //$("#btnNext").click(function () {
+        //    pageIndex++;
+        //    PageList();
+        //});
+        //$("#btnLast").click(function () {
+        //    pageIndex = pageCount;
+        //    PageList();
+        //});
+    });
+
+
+    function PageRows() {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/GetRows",
+            data: "{}",
+            
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                //获取总条数
+                rows = result;
+                
+                layui.use(['laypage', 'layer'], function () {
+                    var laypage = layui.laypage
+                        , layer = layui.layer;
+                    //完整功能
+                    laypage.render({
+                        elem: 'demoPageList'//分页容器的id
+                        , count: rows//总条数
+                        , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                        , jump: function (obj, first) {
+                            if (!first) {
+                                //调用分页的方法
+                                PageList(obj.curr, obj.limit);
+                            }
+                            console.log(obj)
+                        }
+                    });
+                });
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+
+    function PageList(pindex,psize) {
+        $.ajax({
+            type: "POST",
+            url: "/DemoAJAX/DemoPageList",
+            data: "{pageIndex:" + pindex + ",pageSize:" + psize + "}",
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                //获取总页数
+                pageCount = result.PageCount;
+                //console.log(result);
+                $("#tb1 tr").remove();
+                $.each(result.DataList, function (index, data) {
+                    $("#tb1").append("<tr><td>" + data.id + "</td><td>" + data.name + "</td><td>" + data.age + "</td><td>" + data.cName + "</td><td><a href='#' class='layui-btn layui-btn-danger' onclick='return Del(" + data.id + ")'>删除</a><a href='/DemoAJAX/Update?id=" + data.id + "' class='layui-btn layui-btn-normal'>修改</a></td></tr>");
+                });
+            },
+            error: function (ex) {
+                alert(ex.responseText);
+            }
+        });
+
+    }
+
+    function Del(id) {
+        if (confirm('确定删除?')) {
+
+            $.ajax({
+                type: "POST",
+                url: "/DemoAJAX/Del",
+                data: "{id:" + id + "}",
+                dataType: "json",
+                contentType: "application/json",
+                success: function (result) {
+                    if (result > 0) {
+                        alert("删除成功！");
+                        PageList();
+                    }
+                    else {
+                        alert("删除失败！");
+                    }
+                },
+                error: function (ex) {
+                    alert(ex.responseText);
+                }
+            });
+        }
+        return false;
+    }
+
+
+</script>
